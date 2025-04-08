@@ -76,7 +76,7 @@ class Model(nn.Module):
 
     def fix_pert(self, sigma, hash_num):
         assert not hasattr(self, 'fixed_pert')
-        rand = np.random.randint(2**32-1)
+        rand = np.random.randint(2**31-1)
         np.random.seed(hash_num)
         self.fixed_pert = torch.FloatTensor(1,3,32,32).normal_(0, sigma)
         if self.gpu:

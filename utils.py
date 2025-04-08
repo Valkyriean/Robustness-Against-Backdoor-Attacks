@@ -31,6 +31,7 @@ class SmoothedDataset(torch.utils.data.Dataset):
         self.sigma = sigma
 
         data_shape = dataset[0][0].shape
+        # print(data_shape)
         self.perturbs = torch.FloatTensor(len(dataset), *data_shape).normal_(0, sigma)
 
     def __len__(self,):
@@ -122,4 +123,9 @@ def certificate_over_dataset(model, dataloader, PREFIX, N_m, sigma):
     gx[np.arange(len(pred_c)), pred_c] = -1
     pb = gx.max(1)
     is_acc = (pred_c==labs)
+    # Compute attack success rate (ASR)
+    attack_success = (pred_c == 0)  # Check if the top-1 prediction is the attack label
+    attack_success_rate = np.sum(attack_success) / len(labs)  # Calculate the ratio of attack successes
+
+    print("Attack Success Rate (ASR): %.4f" % attack_success_rate)
     return pa, pb, is_acc

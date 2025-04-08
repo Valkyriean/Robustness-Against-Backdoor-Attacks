@@ -57,6 +57,9 @@ if __name__ == '__main__':
 
     # Calculate the expectation and bound of p_A and p_B
     pa_exp, pb_exp, is_acc = certificate_over_dataset(model, testloader_poison, PREFIX, args['N_m'], args['sigma'])
+    # print(pa_exp, pb_exp, is_acc)
+    print(f'PA: {pa_exp.mean()* 100:.2f}%, PB: {pb_exp.mean()* 100:.2f}%, RA: {is_acc.mean()* 100:.2f}')
+   
     heof_factor = np.sqrt(np.log(1/args['alpha'])/2/args['N_m'])
     pa = np.maximum(1e-8, pa_exp - heof_factor)
     pb = np.minimum(1-1e-8, pb_exp + heof_factor)
@@ -85,3 +88,4 @@ if __name__ == '__main__':
     print ("Expected Cert acc:", ' / '.join(['%.5f'%x for x in cert_acc_exp]))
     print ("Expected Cond acc:", ' / '.join(['%.5f'%x for x in cond_acc_exp]))
     print ("Expected Cert ratio:", ' / '.join(['%.5f'%x for x in cert_ratio_exp]))
+    print(is_acc.mean())

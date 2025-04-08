@@ -5,3 +5,5 @@ raw_data/*
 !.keep
 __pycache__/
 *.pyc
+raw_data.zip
+saved_model.zip
