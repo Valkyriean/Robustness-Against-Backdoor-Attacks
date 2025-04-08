@@ -30,6 +30,9 @@ if __name__ == '__main__':
     args = vars(args)
     print (args)
 
+    np.random.seed(42)
+    torch.manual_seed(42)
+
     use_gpu = True
 
     poisoned_train, testloader_benign, testloader_poison, BATCH_SIZE, N_EPOCH, LR, Model = attack_setting(args)
@@ -46,8 +49,11 @@ if __name__ == '__main__':
 
     for _ in range(args['N_m']):
         model = Model(gpu=use_gpu)
-        trainset = SmoothedDataset(poisoned_train, args['sigma'])
-        trainloader = torch.utils.data.DataLoader(trainset, batch_size=BATCH_SIZE, shuffle=True)
+        if args['sm'] == 0:
+            trainloader = torch.utils.data.DataLoader(poisoned_train, batch_size=BATCH_SIZE, shuffle=True)
+        else:
+            trainset = SmoothedDataset(poisoned_train, args['sigma'])
+            trainloader = torch.utils.data.DataLoader(trainset, batch_size=BATCH_SIZE, shuffle=True)
         train_model(model, trainloader, lr=LR, epoch_num=N_EPOCH, dldp_setting=(args['dldp_sigma'],args['dldp_gnorm']), verbose=False)
         save_path = PREFIX+'/smoothed_%d.model'%_
         torch.save(model.state_dict(), save_path)

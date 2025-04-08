@@ -60,7 +60,13 @@ def attack_setting(args, test_label_poison=True, ret_testset=False):
         trainset = torchvision.datasets.CIFAR10(root='./raw_data/', train=True, download=True, transform=transform)
         testset = torchvision.datasets.CIFAR10(root='./raw_data/', train=False, download=False, transform=transform)
         from cifar10_cnn_model import Model
+        # from collections import Counter
 
+        # labels = [label for _, label in testset]
+        # label_counts = Counter(labels)
+
+        # for label, count in sorted(label_counts.items()):
+        #     print(f"Label {label}: {count}")
     elif args['dataset'] == 'imagenet':
         N_EPOCH = 5
         if args['dldp_sigma'] > 0: # DLDP requires more memory.
@@ -116,17 +122,22 @@ def attack_setting(args, test_label_poison=True, ret_testset=False):
 
     TGT_CLASS = 0 # Target class in backdoor attack.
     poisoned_train = BackdoorDataset(trainset, trigger_func, TGT_CLASS, args['poison_r'])
-    if test_label_poison:
-        poisoned_test = BackdoorDataset(testset, trigger_func, TGT_CLASS)
-    else:
-        # Use only non-target class images and do not poison the label
-        nontgt_idx = [i for i in range(len(testset)) if testset[i][1] != TGT_CLASS]
-        nontgt_testset = torch.utils.data.Subset(testset, nontgt_idx)
-        poisoned_test = BackdoorDataset(nontgt_testset, trigger_func, None)
+    # Use only non-target class images and do not poison the label
 
+    nontgt_idx = [i for i in range(len(testset)) if testset[i][1] != TGT_CLASS]
+    print("Non-target testset size: %d"%(len(nontgt_idx)))
+    print("testset size: %d"%(len(testset)))
+    nontgt_testset = torch.utils.data.Subset(testset, nontgt_idx)
+    
+    if test_label_poison:
+        poisoned_test = BackdoorDataset(nontgt_testset, trigger_func, TGT_CLASS)
+
+    else:
+   
+        poisoned_test = BackdoorDataset(nontgt_testset, trigger_func, None)
     testloader_benign = torch.utils.data.DataLoader(testset, batch_size=BATCH_SIZE)
     testloader_poison = torch.utils.data.DataLoader(poisoned_test, batch_size=BATCH_SIZE)
-
+    print("Poisoned testset size: %d"%(len(poisoned_test)))
     if ret_testset:
         return poisoned_train, testset, testloader_benign, testloader_poison, BATCH_SIZE, N_EPOCH, LR, Model
 

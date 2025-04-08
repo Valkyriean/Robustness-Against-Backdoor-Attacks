@@ -103,8 +103,9 @@ def certificate_over_dataset(model, dataloader, PREFIX, N_m, sigma):
     labs = []
     for _ in tqdm(range(N_m)):
         model.load_state_dict(torch.load(PREFIX+'/smoothed_%d.model'%_))
-        hashval = int(sha256(open(PREFIX+'/smoothed_%d.model'%_, 'rb').read()).hexdigest(), 16) % (2**32)
-        model.fix_pert(sigma=sigma, hash_num=hashval)
+        if sigma != 0:
+            hashval = int(sha256(open(PREFIX+'/smoothed_%d.model'%_, 'rb').read()).hexdigest(), 16) % (2**32)
+            model.fix_pert(sigma=sigma, hash_num=hashval)
         all_pred = np.zeros((0,2))
         for x_in, y_in in dataloader:
             pred = torch.sigmoid(model(x_in).squeeze(1)).detach().cpu().numpy()
@@ -113,7 +114,8 @@ def certificate_over_dataset(model, dataloader, PREFIX, N_m, sigma):
                 labs = labs + list(y_in.numpy())
             all_pred = np.concatenate([all_pred, pred], axis=0)
         model_preds.append(all_pred)
-        model.unfix_pert()
+        if sigma != 0:
+            model.unfix_pert()
 
     gx = np.array(model_preds).mean(0)
     labs = np.array(labs)

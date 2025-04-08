@@ -56,7 +56,7 @@ if __name__ == '__main__':
     model.eval()
 
     # Calculate the expectation and bound of p_A and p_B
-    pa_exp, pb_exp, is_acc = certificate_over_dataset(model, testloader_poison, PREFIX, args['N_m'], args['sigma'])
+    pa_exp, pb_exp, is_acc = certificate_over_dataset(model, testloader_poison, PREFIX, args['N_m'], args['sigma'], args['sm'])
     # print(pa_exp, pb_exp, is_acc)
     print(f'PA: {pa_exp.mean()* 100:.2f}%, PB: {pb_exp.mean()* 100:.2f}%, RA: {is_acc.mean()* 100:.2f}')
    
